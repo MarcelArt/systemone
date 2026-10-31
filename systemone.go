@@ -50,17 +50,17 @@ func WithAPIKey(apiKey string) Option {
 func (s1 *SystemOne) Post(ctx context.Context, body Body) (*Response, *ResponseError) {
 	res, err := s1.client.R().
 		SetBody(body).
-		SetResult(&Response{}).
+		SetResult(&envelope{}).
 		SetResultError(&ResponseError{}).
 		WithContext(ctx).
-		SetDebug(true).
+		// SetDebug(true).
 		Post(s1.BaseURL)
 
 	if err != nil {
 		return nil, res.ResultError().(*ResponseError)
 	}
 
-	return res.Result().(*Response), nil
+	return &res.Result().(*envelope).Result, nil
 }
 
 func (s1 *SystemOne) Close() error {
