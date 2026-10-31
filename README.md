@@ -1,5 +1,7 @@
 # systemone
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/MarcelArt/systemone.svg)](https://pkg.go.dev/github.com/MarcelArt/systemone)
+
 A small Go client for SystemOne-style classification models, such as Cloudflare Workers AI's `clef-flash`.
 
 You give the model some text (the *state*) and a set of named questions. It answers each one with a probability, a choice, or a score.
@@ -116,7 +118,7 @@ A runnable version is in [examples/clef](examples/clef). Copy `example.env` to `
 
 ## Documentation
 
-All exported identifiers have doc comments:
+Full API documentation is on [pkg.go.dev](https://pkg.go.dev/github.com/MarcelArt/systemone). All exported identifiers have doc comments, so you can also read them locally:
 
 ```sh
 go doc -all github.com/MarcelArt/systemone
