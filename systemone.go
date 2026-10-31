@@ -84,12 +84,40 @@ func WithAPIKey(apiKey string) Option {
 	}
 }
 
-// Post sends body to BaseURL and returns the decoded answers.
+// Post sends body to BaseURL and returns the decoded JSON response body as a
+// generic map, exactly as the endpoint sent it (for Cloudflare that includes
+// the "result" envelope). Use [SystemOne.PostTyped] for the typed [Response].
 //
-// The endpoint is expected to wrap its payload in a Cloudflare-style
-// {"result": ...} envelope. On a transport error it returns a nil
-// [Response] and the decoded [ResponseError].
-func (s1 *SystemOne) Post(ctx context.Context, body Body) (*Response, *ResponseError) {
+// A transport failure is returned as is. A non-2xx status is returned as a
+// [*ResponseError].
+func (s1 *SystemOne) Post(ctx context.Context, body Body) (map[string]any, error) {
+	res, err := s1.client.R().
+		SetBody(body).
+		SetResult(&map[string]any{}).
+		SetResultError(&ResponseError{}).
+		WithContext(ctx).
+		// SetDebug(true).
+		Post(s1.BaseURL)
+	if err != nil {
+		return nil, err
+	}
+	if !res.IsStatusSuccess() {
+		rerr, _ := res.ResultError().(*ResponseError)
+		if rerr == nil {
+			rerr = &ResponseError{Detail: res.Status()}
+		}
+		return nil, rerr
+	}
+
+	return *res.Result().(*map[string]any), nil
+}
+
+// PostTyped is like [SystemOne.Post] but decodes the Cloudflare-style
+// {"result": ...} envelope into a [Response].
+//
+// On a transport error it returns a nil [Response] and the decoded
+// [ResponseError].
+func (s1 *SystemOne) PostTyped(ctx context.Context, body Body) (*Response, *ResponseError) {
 	res, err := s1.client.R().
 		SetBody(body).
 		SetResult(&envelope{}).

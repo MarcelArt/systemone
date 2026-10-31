@@ -74,10 +74,10 @@ func main() {
         },
     })
     if err != nil {
-        log.Fatalln(err.Detail)
+        log.Fatalln(err)
     }
 
-    log.Printf("%+v", res)
+    log.Println(res)
 }
 ```
 
@@ -93,19 +93,26 @@ A runnable version is in [examples/clef](examples/clef). Copy `example.env` to `
 
 ### Reading the response
 
-`Response.Answers` is keyed by the same names you used in `Questions`. Each value is a `map[string]any` shaped like the API output, for example:
+`Post` returns the decoded JSON body as a `map[string]any`, exactly as the endpoint sent it. With Cloudflare the answers are under `result.answers`, keyed by the names you used in `Questions`:
 
 ```json
-"team":   { "type": "choice", "choice": "technical", "probabilities": { "billing": 0.05, "sales": 0.01, "technical": 0.94 }, "confidence": 0.83 },
-"urgent": { "type": "noul", "noul": 0.92 }
+{
+  "result": {
+    "answers": {
+      "team":   { "type": "choice", "choice": "technical", "probabilities": { "billing": 0.05, "sales": 0.01, "technical": 0.94 }, "confidence": 0.83 },
+      "urgent": { "type": "noul", "noul": 0.92 }
+    },
+    "usage": { "input_tokens": 346, "output_tokens": 0 }
+  },
+  "success": true
+}
 ```
 
-`Response.Usage` holds the input and output token counts.
+`PostTyped` is an alternative that decodes the Cloudflare envelope into a `*Response` (`Model`, `Answers`, `Usage`). It only works with endpoints that use that envelope.
 
-## Notes
+## Errors
 
-- `Post` expects the Cloudflare-style `{"result": {...}}` envelope. An endpoint that returns the payload at the top level will decode as empty.
-- `Post` returns `(*Response, *ResponseError)`. Only transport errors are currently mapped to a `ResponseError`.
+`Post` returns a non-nil `error` on transport failures. A non-2xx status is returned as a `*ResponseError`, which you can extract with `errors.As`.
 
 ## Documentation
 

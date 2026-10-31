@@ -1,5 +1,7 @@
 package systemone
 
+import "fmt"
+
 // Response is the decoded result of a successful [SystemOne.Post].
 type Response struct {
 	// Model is the model that produced the answers.
@@ -26,4 +28,9 @@ type Usage struct {
 // ResponseError is the error body returned by the API.
 type ResponseError struct {
 	Detail any `json:"detail"`
+}
+
+// Error implements the error interface.
+func (e *ResponseError) Error() string {
+	return fmt.Sprint(e.Detail)
 }
